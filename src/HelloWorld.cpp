@@ -2,6 +2,7 @@
 #include <sstream>
 #include <fstream>
 #include <CL/opencl.h>
+#include "helper.hpp"
 
 #define ARRAY_SIZE 3
 void Cleanup(cl_context context, cl_command_queue commandQueue,
