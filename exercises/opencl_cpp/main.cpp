@@ -19,7 +19,13 @@ static char kernelSourceCode[] =
     "   c[i] = a[i] + b[i];                                 \n"
     "}                                                      \n";
 
-int main() {
+std::vector<cl::Platform> get_platforms() {
+  std::vector<cl::Platform> platforms;
+  auto res = cl::Platform::get(&platforms);
+  return platforms;
+}
+
+int _main() {
 
   // init A, B, C
   for (int i = 0; i < BUFFER_SIZE; i++) {
@@ -28,29 +34,29 @@ int main() {
     C[i] = 0;
   }
 
-  std::vector<cl::Platform> platforms;
-  auto res = cl::Platform::get(&platforms);
-  if (res != CL_SUCCESS) {
-    std::cout << "failed to get platforms\n";
+  // 1. select platforms.
+  std::vector<cl::Platform> platforms = get_platforms();
+  if (platforms.size() == 0) {
+    std::cout << "no platforms found.\n";
   }
-  cl_context_properties cprops[] = {CL_CONTEXT_PLATFORM,
-                                    (cl_context_properties)(platforms[0]()), 0};
+  cl_context_properties properties[] = {
+      CL_CONTEXT_PLATFORM, (cl_context_properties)(platforms[0]()), 0};
 
-  // create a context.
-  cl::Context context(CL_DEVICE_TYPE_GPU, cprops);
+  // 2. create a context.
+  cl::Context context(CL_DEVICE_TYPE_GPU, properties);
 
-  // query devices.
+  // 3. query devices.
   std::vector<cl::Device> devices = context.getInfo<CL_CONTEXT_DEVICES>();
 
-  // create command queue
+  // 4. create command queue
   cl::CommandQueue queue(context, devices[0], 0);
 
-  // program object creation and build
+  // 5. program object creation and build
   cl::Program::Sources sources(1, std::make_pair(kernelSourceCode, 0));
   cl::Program program(context, sources);
   program.build(devices);
 
-  // kernel & memory creation
+  // 6. kernel & memory creation
   cl::Buffer aBuffer =
       cl::Buffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
                  BUFFER_SIZE * sizeof(int), (void *)&A[0]);
@@ -67,10 +73,12 @@ int main() {
   kernel.setArg(1, bBuffer);
   kernel.setArg(2, cBuffer);
 
+  // operations..
   queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(BUFFER_SIZE),
                              cl::NullRange);
 
-  // kenerl won't be  not executed right now,
+  // kenerl won't be  not executed right now, so to block operations, just map
+  // the the output to the host memory.
   int *output = (int *)queue.enqueueMapBuffer(
       cBuffer, CL_TRUE /* block */, CL_MAP_READ, 0, BUFFER_SIZE * sizeof(int));
 
@@ -79,6 +87,14 @@ int main() {
   }
   std::cout << "\n";
 
-  res = queue.enqueueUnmapMemObject(cBuffer, (void *)output);
+  auto res = queue.enqueueUnmapMemObject(cBuffer, (void *)output);
 }
 
+int main() {
+  try {
+    _main();
+  } catch (cl::Error &err) {
+    std::cerr << "ERROR: " << err.what() << "(" << err.err() << ")"
+              << std::endl;
+  }
+}
