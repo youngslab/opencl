@@ -10,6 +10,7 @@
 #endif
 
 #include <FreeImage.h>
+#include <fmt/format.h>
 
 ///
 //  Create an OpenCL context on the first available platform using
@@ -169,9 +170,14 @@ void Cleanup(cl_context context, cl_command_queue commandQueue,
 //  Load an image using the FreeImage library and create an OpenCL
 //  image out of it
 //
-cl_mem LoadImage(cl_context context, char *fileName, int &width, int &height) {
+cl_mem LoadImage(cl_context context, char *fileName, size_t &width,
+                 size_t &height) {
   FREE_IMAGE_FORMAT format = FreeImage_GetFileType(fileName, 0);
   FIBITMAP *image = FreeImage_Load(format, fileName);
+  fmt::print("img format - {} \n", format);
+  if (!image) {
+    fmt::print("coundn't load the image\n");
+  }
 
   // Convert to 32-bit image
   FIBITMAP *temp = image;
@@ -197,7 +203,7 @@ cl_mem LoadImage(cl_context context, char *fileName, int &width, int &height) {
                             &clImageFormat, width, height, 0, buffer, &errNum);
 
   if (errNum != CL_SUCCESS) {
-    std::cerr << "Error creating CL image object" << std::endl;
+    std::cerr << "Error creating CL image object - " << errNum << std::endl;
     return 0;
   }
 
@@ -208,10 +214,14 @@ cl_mem LoadImage(cl_context context, char *fileName, int &width, int &height) {
 //  Save an image using the FreeImage library
 //
 bool SaveImage(char *fileName, char *buffer, int width, int height) {
+  fmt::print("saving file.\n ");
   FREE_IMAGE_FORMAT format = FreeImage_GetFIFFromFilename(fileName);
+  fmt::print("foramt: {}, widt: {}, height: {}\n", format, width, height);
+
   FIBITMAP *image =
       FreeImage_ConvertFromRawBits((BYTE *)buffer, width, height, width * 4, 32,
                                    0xFF000000, 0x00FF0000, 0x0000FF00);
+
   return (FreeImage_Save(format, image, fileName) == TRUE) ? true : false;
 }
 
@@ -273,7 +283,7 @@ int main(int argc, char **argv) {
 
   // Load input image from file and load it into
   // an OpenCL image object
-  int width, height;
+  size_t width, height;
   imageObjects[0] = LoadImage(context, argv[1], width, height);
   if (imageObjects[0] == 0) {
     std::cerr << "Error loading: " << std::string(argv[1]) << std::endl;
@@ -307,7 +317,7 @@ int main(int argc, char **argv) {
   }
 
   // Create OpenCL program
-  program = CreateProgram(context, device, "ImageFilter2D.cl");
+  program = CreateProgram(context, device, "gausian_filter.cl");
   if (program == NULL) {
     Cleanup(context, commandQueue, program, kernel, imageObjects, sampler);
     return 1;

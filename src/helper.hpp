@@ -1,6 +1,9 @@
+#ifdef __APPLE__
+#include <OpenCL/cl.h>
+#else
+#include <CL/cl.h>
+#endif
 
-
-#include <CL/opencl.h>
 #include <optional>
 #include <vector>
 #include <fstream>
@@ -63,7 +66,7 @@ template <typename T>
 auto create_buffers(cl_context ctx, int num_elements, int num_devices)
     -> std::vector<cl_mem> {
 
-  cl_uint err_num;
+  cl_int err_num;
   std::vector<cl_mem> bs;
   auto b =
       clCreateBuffer(ctx, CL_MEM_READ_WRITE,
@@ -174,4 +177,3 @@ auto get_platform_info_str(cl_platform_id id, cl_platform_info name)
   return info;
 }
 } // namespace clx
-

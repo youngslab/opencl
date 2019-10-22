@@ -1,5 +1,6 @@
 [requires] 
 khronos-opencl-icd-loader/20190827@bincrafters/stable
+fmt/6.0.0@bincrafters/stable
 
 [generators] 
 cmake_find_package
