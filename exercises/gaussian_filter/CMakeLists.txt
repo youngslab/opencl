@@ -1,17 +1,5 @@
 
 find_package(FREEIMAGE REQUIRED)
-
-
-find_package(OpenCL) 
-if(OPENCL_FOUND) 
-message(STATUS "opencl found")
-set(OpenCL_Impl OpenCL)
-else()
-message(STATUS "opencl not found")
-find_package(khronos-opencl-icd-loader) 
-set(OpenCL_Impl khronos-opencl-icd-loader) 
-endif(OPENCL_FOUND)
-
 find_package(fmt REQUIRED)
 
 add_executable(gaussian_filter main.cpp)

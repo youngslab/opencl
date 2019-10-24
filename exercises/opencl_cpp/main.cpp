@@ -1,29 +1,15 @@
-
-
 #include <iostream>
+#include <sstream>
 #include <vector>
+#include <fmt/format.h>
 
-#define __CL_ENABLE_EXCEPTIONS
-#include "cl.hpp"
+#include "cl/clx.hpp"
+#include "cl/kernels.hpp"
 
 #define BUFFER_SIZE 20
 int A[BUFFER_SIZE];
 int B[BUFFER_SIZE];
 int C[BUFFER_SIZE];
-
-static char kernelSourceCode[] =
-    "__kernel void \n"
-    "vadd(__global int *a, __global int*b, __golbal int *c) \n"
-    "{                                                      \n"
-    "   size_t i = get_global_id(0);                        \n"
-    "   c[i] = a[i] + b[i];                                 \n"
-    "}                                                      \n";
-
-std::vector<cl::Platform> get_platforms() {
-  std::vector<cl::Platform> platforms;
-  auto res = cl::Platform::get(&platforms);
-  return platforms;
-}
 
 int _main() {
 
@@ -35,10 +21,11 @@ int _main() {
   }
 
   // 1. select platforms.
-  std::vector<cl::Platform> platforms = get_platforms();
+  std::vector<cl::Platform> platforms = clx::get_platforms();
   if (platforms.size() == 0) {
     std::cout << "no platforms found.\n";
   }
+
   cl_context_properties properties[] = {
       CL_CONTEXT_PLATFORM, (cl_context_properties)(platforms[0]()), 0};
 
@@ -47,14 +34,34 @@ int _main() {
 
   // 3. query devices.
   std::vector<cl::Device> devices = context.getInfo<CL_CONTEXT_DEVICES>();
+  for (auto &dev : devices) {
+  }
 
   // 4. create command queue
   cl::CommandQueue queue(context, devices[0], 0);
 
   // 5. program object creation and build
-  cl::Program::Sources sources(1, std::make_pair(kernelSourceCode, 0));
+  cl::Program::Sources sources(1, std::make_pair(clx::kernel::adder2, 0));
+
   cl::Program program(context, sources);
-  program.build(devices);
+
+  try {
+    program.build(devices);
+  } catch (cl::Error &e) {
+    for (auto &dev : devices) {
+      // Check the build status
+      cl_build_status status =
+          program.getBuildInfo<CL_PROGRAM_BUILD_STATUS>(dev);
+      if (status != CL_BUILD_ERROR)
+        continue;
+
+      // Get the build log
+      std::string name = dev.getInfo<CL_DEVICE_NAME>();
+      std::string buildlog = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(dev);
+      std::cerr << "Build log for " << name << ":" << std::endl
+                << buildlog << std::endl;
+    }
+  }
 
   // 6. kernel & memory creation
   cl::Buffer aBuffer =
@@ -88,13 +95,16 @@ int _main() {
   std::cout << "\n";
 
   auto res = queue.enqueueUnmapMemObject(cBuffer, (void *)output);
+
+  return 0;
 }
 
 int main() {
   try {
-    _main();
+    return _main();
   } catch (cl::Error &err) {
     std::cerr << "ERROR: " << err.what() << "(" << err.err() << ")"
               << std::endl;
   }
+  return -1;
 }

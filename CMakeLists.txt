@@ -21,6 +21,16 @@ set(CMAKE_SYSTEM_PREFIX_PATH ${CMAKE_SYSTEM_PREFIX_PATH}
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_BINARY_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
+find_package(OpenCL) 
+if(OPENCL_FOUND) 
+message(STATUS "opencl found")
+set(OpenCL_Impl OpenCL)
+else()
+message(STATUS "opencl not found")
+find_package(khronos-opencl-icd-loader) 
+set(OpenCL_Impl khronos-opencl-icd-loader) 
+endif(OPENCL_FOUND)
+
 add_subdirectory(third_party)
 add_subdirectory(exercises)
 
@@ -51,13 +61,6 @@ target_link_libraries(helper_example
 set_target_properties(helper_example PROPERTIES
               CXX_STANDARD 17)
 
-add_executable(image-gausian src/image_gausian.cpp)
 
-target_link_libraries(image-gausian
-  khronos-opencl-icd-loader::khronos-opencl-icd-loader)
 
-target_include_directories(image-gausian
-  PRIVATE include)
 
-set_target_properties(image-gausian PROPERTIES
-              CXX_STANDARD 17)
