@@ -1,5 +1,4 @@
 
-find_package(FREEIMAGE REQUIRED)
 
 find_package(OpenCL) 
 if(OPENCL_FOUND) 
@@ -13,21 +12,20 @@ endif(OPENCL_FOUND)
 
 find_package(fmt REQUIRED)
 
-add_executable(gaussian_filter main.cpp)
+add_executable(clx clx.cpp)
 
-target_link_libraries(gaussian_filter 
+target_link_libraries(clx 
   ${OpenCL_Impl}::${OpenCL_Impl}
-  ${FREEIMAGE_LIBRARIES} 
   fmt::fmt
   pthread
   dl
   )
 
-target_include_directories(gaussian_filter 
+target_include_directories(clx 
   PRIVATE
-  ${FREEIMAGE_INCLUDE_DIRS})
+  ${CMAKE_SOURCE_DIR}/include)
 
-set_target_properties(gaussian_filter PROPERTIES
+set_target_properties(clx PROPERTIES
               CXX_STANDARD 17)
-FILE(COPY ./gausian_filter.cl DESTINATION "${CMAKE_BINARY_DIR}/bin")
+# FILE(COPY ./gausian_filter.cl DESTINATION "${CMAKE_BINARY_DIR}/bin")
 

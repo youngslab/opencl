@@ -13,9 +13,9 @@ endif(OPENCL_FOUND)
 
 find_package(fmt REQUIRED)
 
-add_executable(gaussian_filter main.cpp)
+add_executable(histogram histogram.cpp)
 
-target_link_libraries(gaussian_filter 
+target_link_libraries(histogram 
   ${OpenCL_Impl}::${OpenCL_Impl}
   ${FREEIMAGE_LIBRARIES} 
   fmt::fmt
@@ -23,11 +23,12 @@ target_link_libraries(gaussian_filter
   dl
   )
 
-target_include_directories(gaussian_filter 
+target_include_directories(histogram 
   PRIVATE
   ${FREEIMAGE_INCLUDE_DIRS})
 
-set_target_properties(gaussian_filter PROPERTIES
+set_target_properties(histogram PROPERTIES
               CXX_STANDARD 17)
-FILE(COPY ./gausian_filter.cl DESTINATION "${CMAKE_BINARY_DIR}/bin")
+
+FILE(COPY histogram_image.cl DESTINATION "${CMAKE_BINARY_DIR}/bin")
 
