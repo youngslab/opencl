@@ -26,7 +26,7 @@
 #define CL_CALLBACK
 #endif
 
-#include "clx.hpp"
+#include "cl/clx.hpp"
 #include <fmt/format.h>
 
 // Constants
@@ -123,23 +123,23 @@ int main(int argc, char **argv) {
 
   auto queue = clx::create_command_queue(context, cpu_devices[0], 0);
 
-  clx::set_arguments(kernel, input_signal_buffer, mask_buffer,
-                     output_signal_buffer, outputSignalWidth, maskWidth);
+  success =
+      clx::set_arguments(kernel, input_signal_buffer, mask_buffer,
+                         output_signal_buffer, outputSignalWidth, maskWidth);
 
-  /*
+  if (!success) {
+    fmt::print("[ERROR] failed to set arguments.\n");
+  }
+
   const size_t globalWorkSize[1] = {outputSignalWidth * outputSignalHeight};
   const size_t localWorkSize[1] = {1};
 
   // Queue the kernel up for execution across the array
-  errNum = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, globalWorkSize,
-                                  localWorkSize, 0, NULL, NULL);
-  checkErr(errNum, "clEnqueueNDRangeKernel");
-
-  errNum = clEnqueueReadBuffer(queue, outputSignalBuffer, CL_TRUE, 0,
-                               sizeof(cl_uint) * outputSignalHeight *
-                                   outputSignalHeight,
-                               outputSignal, 0, NULL, NULL);
-  checkErr(errNum, "clEnqueueReadBuffer");
+  auto err = clx::enqueue_nd_ranage_kernel(queue, kernel, 1, NULL,
+                                           globalWorkSize, localWorkSize);
+  err = clx::enqueue_read_buffer(
+      queue, output_signal_buffer, CL_TRUE, 0,
+      sizeof(cl_uint) * outputSignalHeight * outputSignalHeight, outputSignal);
 
   // Output the result buffer
   for (int y = 0; y < outputSignalHeight; y++) {
@@ -152,6 +152,4 @@ int main(int argc, char **argv) {
   std::cout << std::endl << "Executed program succesfully." << std::endl;
 
   return 0;
-  */
 }
-

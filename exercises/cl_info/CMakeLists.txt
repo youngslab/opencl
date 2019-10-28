@@ -1,5 +1,4 @@
 
-
 find_package(OpenCL) 
 if(OPENCL_FOUND) 
 message(STATUS "opencl found")
@@ -12,20 +11,19 @@ endif(OPENCL_FOUND)
 
 find_package(fmt REQUIRED)
 
-add_executable(clx clx.cpp)
+add_executable(cl_info cl_info.cpp)
 
-target_link_libraries(clx 
+target_link_libraries(cl_info 
   ${OpenCL_Impl}::${OpenCL_Impl}
   fmt::fmt
   pthread
   dl
   )
 
-target_include_directories(clx 
+target_include_directories(cl_info 
   PRIVATE
   ${CMAKE_SOURCE_DIR}/include)
 
-set_target_properties(clx PROPERTIES
+set_target_properties(cl_info PROPERTIES
               CXX_STANDARD 17)
-# FILE(COPY ./gausian_filter.cl DESTINATION "${CMAKE_BINARY_DIR}/bin")
 
