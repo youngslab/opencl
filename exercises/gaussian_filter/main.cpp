@@ -223,7 +223,10 @@ bool SaveImage(char *fileName, char *buffer, int width, int height) {
       FreeImage_ConvertFromRawBits((BYTE *)buffer, width, height, width * 4, 32,
                                    0xFF000000, 0x00FF0000, 0x0000FF00);
 
-  return (FreeImage_Save(format, image, fileName) == TRUE) ? true : false;
+  if (!image) {
+    fmt::print("[ERROR] failed to convert\n");
+  }
+  return (FreeImage_Save(FIF_BMP, image, fileName) == TRUE) ? true : false;
 }
 
 ///
@@ -259,10 +262,10 @@ int main(int argc, char **argv) {
 
   auto platforms = clx::get_platform_ids();
   auto ps = clx::create_context_properties(platforms[0]);
-  auto ctx = clx::create_context_from_type(ps, CL_DEVICE_TYPE_GPU);
-  if (!ctx) {
-    ctx = clx::create_context_from_type(ps, CL_DEVICE_TYPE_CPU);
-    if (!ctx) {
+  context = clx::create_context_from_type(ps, CL_DEVICE_TYPE_GPU);
+  if (!context) {
+    context = clx::create_context_from_type(ps, CL_DEVICE_TYPE_CPU);
+    if (!context) {
       // err ...
     }
   }
