@@ -25,7 +25,9 @@ target_link_libraries(gaussian_filter
 
 target_include_directories(gaussian_filter 
   PRIVATE
-  ${FREEIMAGE_INCLUDE_DIRS})
+  ${FREEIMAGE_INCLUDE_DIRS}
+  ${CMAKE_SOURCE_DIR}/include
+  )
 
 set_target_properties(gaussian_filter PROPERTIES
               CXX_STANDARD 17)

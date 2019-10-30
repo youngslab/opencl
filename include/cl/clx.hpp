@@ -264,6 +264,19 @@ auto create_context(cl_platform_id const &platform,
   return create_context(platform, devices, nullptr, nullptr);
 }
 
+auto create_context_from_type(cl_context_properties const &ps,
+                              cl_device_type const &t, context_callback cb,
+                              void *user_data) -> cl_context {
+  cl_int err;
+  auto ctx = clCreateContextFromType(ps, type, cb, user_data, &err);
+  set_err_if_err(err, "clCreateContextFromType");
+  return ctx;
+}
+auto creat_context_from_type(cl_context_properties const &ps,
+                             cl_device_type const &t) {
+  return create_context_from_type(ps, t, nullptr, nullptr);
+}
+
 auto create_program(cl_context ctx, char const *file) -> cl_program {
   std::ifstream srcFile(file);
   if (!srcFile.is_open()) {

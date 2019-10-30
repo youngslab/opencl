@@ -12,6 +12,7 @@
 #include <FreeImage.h>
 #include <fmt/format.h>
 
+#include "cl/clx.hpp"
 ///
 //  Create an OpenCL context on the first available platform using
 //  either a GPU or CPU depending on what is available.
@@ -256,11 +257,14 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  // Create an OpenCL context on first available platform
-  context = CreateContext();
-  if (context == NULL) {
-    std::cerr << "Failed to create OpenCL context." << std::endl;
-    return 1;
+  auto platforms = clx::get_platform_ids();
+  auto ps = clx::create_context_properties(platforms[0]);
+  auto ctx = clx::create_context_from_type(ps, CL_DEVICE_TYPE_GPU);
+  if (!ctx) {
+    ctx = clx::create_context_from_type(ps, CL_DEVICE_TYPE_CPU);
+    if (!ctx) {
+      // err ...
+    }
   }
 
   // Create a command-queue on the first device available
