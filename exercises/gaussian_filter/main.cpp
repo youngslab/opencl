@@ -245,7 +245,6 @@ size_t RoundUp(int groupSize, int globalSize) {
 //  main() for HelloBinaryWorld example
 //
 int main(int argc, char **argv) {
-  cl_context context = 0;
   cl_command_queue commandQueue = 0;
   cl_program program = 0;
   cl_device_id device = 0;
@@ -258,16 +257,6 @@ int main(int argc, char **argv) {
     std::cerr << "USAGE: " << argv[0] << " <inputImageFile> <outputImageFiles>"
               << std::endl;
     return 1;
-  }
-
-  auto platforms = clx::get_platform_ids();
-  auto ps = clx::create_context_properties(platforms[0]);
-  context = clx::create_context_from_type(ps, CL_DEVICE_TYPE_GPU);
-  if (!context) {
-    context = clx::create_context_from_type(ps, CL_DEVICE_TYPE_CPU);
-    if (!context) {
-      // err ...
-    }
   }
 
   // Create a command-queue on the first device available
